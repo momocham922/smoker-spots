@@ -1,0 +1,24 @@
+WARNING: You might be using automatic scaling for a standard environment deployment, without providing a value for automatic_scaling.max_instances. Starting from March, 2025, App Engine sets the automatic scaling maximum instances default for standard environment deployments to 20. This change doesn't impact existing apps. To override the default, specify the new max_instances value in your app.yaml file, and deploy a new version or redeploy over an existing version. For details on max_instances, see https://cloud.google.com/appengine/docs/standard/reference/app-yaml.md#scaling_elements. 
+
+Services to deploy:
+
+descriptor:                  [/workspaces/hogeproj/smoker-spots/app.yaml]
+source:                      [/workspaces/hogeproj/smoker-spots]
+target project:              [smoker-spots-app]
+target service:              [default]
+target version:              [20250317t020737]
+target url:                  [https://smoker-spots-app.an.r.appspot.com]
+target service account:      [smoker-spots-app@appspot.gserviceaccount.com]
+
+
+Beginning deployment of service [default]...
+╔════════════════════════════════════════════════════════════╗
+╠═ Uploading 1 file to Google Cloud Storage                 ═╣
+╚════════════════════════════════════════════════════════════╝
+File upload done.
+Updating service [default]...
+..................................................................failed.
+ERROR: (gcloud.app.deploy) Error Response: [9] Cloud build 22eef8ed-99c6-46d2-9459-8f8fb320d970 status: FAILURE
+Failed to download at least one file. Cannot continue.
+
+Full build logs: https://console.cloud.google.com/cloud-build/builds;region=asia-northeast1/22eef8ed-99c6-46d2-9459-8f8fb320d970?project=689889531515

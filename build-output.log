@@ -1,0 +1,4 @@
+
+> smoker-spots@1.0.0 build
+> expo export:web --output-dir public
+

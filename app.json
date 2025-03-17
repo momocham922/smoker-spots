@@ -1,28 +1,61 @@
 {
   "expo": {
-    "name": "smoker-spots",
+    "name": "喫煙所マップ",
     "slug": "smoker-spots",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1E1E2E"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.smokerspot.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "このアプリは、近くの喫煙所を表示するために位置情報を使用します。",
+        "UIBackgroundModes": [
+          "location"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1E1E2E"
+      },
+      "package": "com.smokerspot.app",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBab6xodw-6bYn1x6UJDRk7W2wITCAnSwc"
+        }
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-location"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "47f53629-bd21-476f-8c67-29aae287ed71"
+      }
+    },
+    "owner": "momocham922"
   }
 }

@@ -6,17 +6,35 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "expo export:web",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "jest",
+    "deploy": "firebase deploy --only hosting"
   },
   "dependencies": {
+    "@react-navigation/bottom-tabs": "^7.2.1",
+    "@react-navigation/native": "^7.0.15",
+    "@react-navigation/native-stack": "^7.2.1",
+    "@react-navigation/stack": "^7.1.2",
     "expo": "~52.0.38",
+    "expo-linear-gradient": "^14.0.2",
+    "expo-location": "^18.0.8",
     "expo-status-bar": "~2.0.1",
+    "firebase": "^11.4.0",
     "react": "18.3.1",
-    "react-native": "0.76.7"
+    "react-native": "0.76.7",
+    "react-native-maps": "^1.20.1",
+    "react-native-paper": "^5.13.1",
+    "react-native-safe-area-context": "^5.3.0",
+    "react-native-screens": "^4.9.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~18.3.12",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "typescript": "^5.3.3"
   },
   "private": true

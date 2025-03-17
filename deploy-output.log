@@ -1,0 +1,22 @@
+Services to deploy:
+
+descriptor:                  [/workspaces/hogeproj/smoker-spots/app.yaml]
+source:                      [/workspaces/hogeproj/smoker-spots]
+target project:              [smoker-spots-app]
+target service:              [default]
+target version:              [20250317t014448]
+target url:                  [https://smoker-spots-app.an.r.appspot.com]
+target service account:      [smoker-spots-app@appspot.gserviceaccount.com]
+
+
+Beginning deployment of service [default]...
+╔════════════════════════════════════════════════════════════╗
+╠═ Uploading 1 file to Google Cloud Storage                 ═╣
+╚════════════════════════════════════════════════════════════╝
+File upload done.
+Updating service [default]...
+....................................................................failed.
+ERROR: (gcloud.app.deploy) Error Response: [9] Cloud build 17417bed-2464-43a6-a4ba-5026d381a37c status: FAILURE
+Failed to download at least one file. Cannot continue.
+
+Full build logs: https://console.cloud.google.com/cloud-build/builds;region=asia-northeast1/17417bed-2464-43a6-a4ba-5026d381a37c?project=689889531515

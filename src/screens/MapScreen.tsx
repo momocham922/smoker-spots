@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform, Alert, Image, Animated } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Dimensions, Platform, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import MapView, { Marker, Callout, PROVIDER_GOOGLE, Region, MapStyleElement } from 'react-native-maps';
+import MapView, { Marker, Callout, Region, MapStyleElement } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Appbar, FAB, Card, Chip, ActivityIndicator, Button, Surface, Avatar, Badge, Divider } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Appbar, FAB, Button } from 'react-native-paper';
 import { getAuth } from 'firebase/auth';
 import { getSmokerSpots, saveFavoriteSpot } from '../services/firebase';
 import { SmokerSpot, Location as LocationType } from '../types';
@@ -325,7 +324,7 @@ const MapScreen = () => {
           return;
         }
         
-        if (spots.length > 0) {
+        if (spots && spots.length > 0) {
           setSpots(spots);
         }
       } catch (error) {
@@ -347,38 +346,15 @@ const MapScreen = () => {
     }
   };
 
-  // 喫煙所を保存するハンドラー
-  const handleSaveSpot = async (spotId: string) => {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      
-      if (!user) {
-        Alert.alert('ログインが必要です', 'お気に入りに追加するにはログインが必要です。');
-        return;
-      }
-      
-      const { success, error } = await saveFavoriteSpot(spotId, user.uid);
-      
-      if (success) {
-        Alert.alert('保存しました', 'お気に入りに追加しました。');
-      } else {
-        Alert.alert('エラー', '保存に失敗しました。');
-        console.error('お気に入りの保存に失敗しました:', error);
-      }
-    } catch (error) {
-      Alert.alert('エラー', '保存に失敗しました。');
-      console.error('お気に入りの保存に失敗しました:', error);
-    }
-  };
-
   // 詳細画面に遷移するハンドラー
   const handleViewDetails = (spot: SmokerSpot) => {
+    // @ts-ignore
     navigation.navigate('SpotDetail', { spotId: spot.id });
   };
 
   // 喫煙所追加画面に遷移するハンドラー
   const handleAddSpot = () => {
+    // @ts-ignore
     navigation.navigate('AddSpot', { 
       initialLocation: currentLocation || { 
         latitude: 35.681236, 
@@ -392,7 +368,7 @@ const MapScreen = () => {
     setFilterVisible(true);
   };
 
-  // 地図上のマーカーをレンダリング
+  // 地図上のマーカーをレンダリング（シンプル化）
   const renderMarkers = () => {
     return spots.map((spot) => (
       <Marker
@@ -406,94 +382,33 @@ const MapScreen = () => {
         onPress={() => setSelectedSpot(spot)}
       >
         <View style={styles.markerContainer}>
-          <Surface style={styles.markerSurface}>
+          <View style={styles.markerSurface}>
             <MaterialCommunityIcons name="smoking" size={20} color={THEME_COLORS.primary} />
-          </Surface>
-          <View style={styles.markerArrow} />
+          </View>
         </View>
-        <Callout tooltip onPress={() => handleViewDetails(spot)}>
-          <Card style={styles.callout} elevation={5}>
-            <LinearGradient
-              colors={[THEME_COLORS.primary, THEME_COLORS.darkPurple]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.calloutHeader}
-            >
-              <Text style={styles.calloutTitle}>{spot.title}</Text>
+        <Callout onPress={() => handleViewDetails(spot)}>
+          <View style={styles.calloutContainer}>
+            <Text style={styles.calloutTitle}>{spot.title}</Text>
+            <Text style={styles.calloutDescription}>{spot.description}</Text>
+            <View style={styles.calloutFooter}>
               <View style={styles.ratingContainer}>
                 <MaterialIcons name="star" size={16} color="#FFD700" />
                 <Text style={styles.rating}>{spot.rating.toFixed(1)}</Text>
               </View>
-            </LinearGradient>
-            <Card.Content style={styles.calloutContent}>
-              <Text style={styles.description}>{spot.description}</Text>
-              <View style={styles.facilitiesContainer}>
-                {spot.facilities.hasRoof && (
-                  <Chip
-                    icon="umbrella"
-                    style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]}
-                    textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-                  >
-                    屋根
-                  </Chip>
-                )}
-                {spot.facilities.hasSeating && (
-                  <Chip
-                    icon="seat"
-                    style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]}
-                    textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-                  >
-                    座席
-                  </Chip>
-                )}
-                {spot.facilities.hasVendingMachine && (
-                  <Chip
-                    icon="coffee"
-                    style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]}
-                    textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-                  >
-                    自販機
-                  </Chip>
-                )}
-                {spot.facilities.isIndoor ? (
-                  <Chip
-                    icon="home"
-                    style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]}
-                    textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-                  >
-                    屋内
-                  </Chip>
-                ) : (
-                  <Chip
-                    icon="tree"
-                    style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]}
-                    textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-                  >
-                    屋外
-                  </Chip>
-                )}
-              </View>
-              <Divider style={styles.divider} />
-              <View style={styles.hoursContainer}>
-                <MaterialIcons name="access-time" size={16} color={THEME_COLORS.text} />
-                <Text style={styles.hours}>
-                  {spot.businessHours.isOpen24Hours
-                    ? '24時間営業'
-                    : `${spot.businessHours.openingTime}〜${spot.businessHours.closingTime}`
-                  }
-                </Text>
-              </View>
-              <Button
-                mode="contained"
-                onPress={() => handleViewDetails(spot)}
-                style={[styles.detailsButton, { backgroundColor: THEME_COLORS.primary }]}
-                labelStyle={styles.buttonLabel}
-                icon="information-outline"
-              >
-                詳細を見る
-              </Button>
-            </Card.Content>
-          </Card>
+              <Text style={styles.hours}>
+                {spot.businessHours.isOpen24Hours
+                  ? '24時間営業'
+                  : `${spot.businessHours.openingTime}〜${spot.businessHours.closingTime}`
+                }
+              </Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.detailsButton}
+              onPress={() => handleViewDetails(spot)}
+            >
+              <Text style={styles.detailsButtonText}>詳細を見る</Text>
+            </TouchableOpacity>
+          </View>
         </Callout>
       </Marker>
     ));
@@ -520,7 +435,6 @@ const MapScreen = () => {
           <MapView
             ref={mapRef}
             style={styles.map}
-            provider={PROVIDER_GOOGLE}
             customMapStyle={mapStyle}
             initialRegion={{
               latitude: 35.681236,
@@ -608,7 +522,7 @@ const styles = StyleSheet.create({
     color: THEME_COLORS.primary,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
   },
-  // マーカースタイル
+  // マーカースタイル（シンプル化）
   markerContainer: {
     alignItems: 'center',
   },
@@ -625,95 +539,56 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-  markerArrow: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 8,
-    borderStyle: 'solid',
-    backgroundColor: 'transparent',
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: 'white',
-    transform: [{ translateY: -1 }],
-  },
-  // コールアウトスタイル
-  callout: {
-    width: 280,
-    borderRadius: 16,
-    padding: 0,
-    overflow: 'hidden',
-  },
-  calloutHeader: {
+  // コールアウトスタイル（シンプル化）
+  calloutContainer: {
+    width: 220,
     padding: 12,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: 'white',
+    borderRadius: 8,
+  },
+  calloutTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 6,
+    color: THEME_COLORS.primary,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif-medium',
+  },
+  calloutDescription: {
+    fontSize: 14,
+    color: THEME_COLORS.text,
+    marginBottom: 10,
+    lineHeight: 18,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Book' : 'sans-serif',
+  },
+  calloutFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  calloutTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    flex: 1,
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif-medium',
-  },
-  calloutContent: {
-    padding: 12,
-  },
-  description: {
-    fontSize: 14,
-    color: THEME_COLORS.text,
-    marginBottom: 12,
-    lineHeight: 20,
+    marginBottom: 10,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 215, 0, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
   },
   rating: {
     marginLeft: 4,
     fontWeight: 'bold',
-    color: '#FFD700',
-  },
-  facilitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  facilityChip: {
-    margin: 2,
-    height: 32,
-  },
-  divider: {
-    marginVertical: 12,
-    height: 1,
-    backgroundColor: THEME_COLORS.border,
-  },
-  hoursContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    color: THEME_COLORS.text,
   },
   hours: {
-    fontSize: 14,
+    fontSize: 12,
     color: THEME_COLORS.text,
-    marginLeft: 8,
   },
   detailsButton: {
-    marginTop: 8,
-    borderRadius: 8,
-    elevation: 2,
+    backgroundColor: THEME_COLORS.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
   },
-  buttonLabel: {
-    fontWeight: '600',
+  detailsButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
     fontSize: 14,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
   },

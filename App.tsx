@@ -218,40 +218,32 @@ export default function App() {
             animation: 'slide_from_right',
           }}
         >
-          {user ? (
-            // ログイン済みの場合
-            <>
-              <Stack.Screen 
-                name="Main" 
-                component={MainTabs} 
-                options={{ headerShown: false }} 
-              />
-              <Stack.Screen 
-                name="SpotDetail" 
-                component={SpotDetailScreen} 
-                options={{ title: '喫煙所の詳細' }} 
-              />
-              <Stack.Screen 
-                name="AddSpot" 
-                component={AddSpotScreen} 
-                options={{ title: '喫煙所を追加' }} 
-              />
-            </>
-          ) : (
-            // 未ログインの場合
-            <>
-              <Stack.Screen 
-                name="Login" 
-                component={LoginScreen} 
-                options={{ headerShown: false }} 
-              />
-              <Stack.Screen 
-                name="Register" 
-                component={RegisterScreen} 
-                options={{ title: 'アカウント登録' }} 
-              />
-            </>
-          )}
+          {/* 認証チェックをバイパスして常にメイン画面を表示 */}
+          <Stack.Screen
+            name="Main"
+            component={MainTabs}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="SpotDetail"
+            component={SpotDetailScreen}
+            options={{ title: '喫煙所の詳細' }}
+          />
+          <Stack.Screen
+            name="AddSpot"
+            component={AddSpotScreen}
+            options={{ title: '喫煙所を追加' }}
+          />
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ title: 'ログイン' }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{ title: 'アカウント登録' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>

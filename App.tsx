@@ -16,14 +16,12 @@ import SplashScreen from './src/components/SplashScreen';
 // スクリーンのインポート
 import MapScreen from './src/screens/MapScreen';
 import ListScreen from './src/screens/ListScreen';
-
-// 仮のスクリーンコンポーネント
-const FavoritesScreen = () => <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>お気に入り画面（開発中）</Text></View>;
-const ProfileScreen = () => <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>プロフィール画面（開発中）</Text></View>;
-const LoginScreen = () => <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>ログイン画面（開発中）</Text></View>;
-const RegisterScreen = () => <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>アカウント登録画面（開発中）</Text></View>;
-const SpotDetailScreen = () => <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>喫煙所詳細画面（開発中）</Text></View>;
-const AddSpotScreen = () => <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}><Text>喫煙所追加画面（開発中）</Text></View>;
+import FavoritesScreen from './src/screens/FavoritesScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import SpotDetailScreen from './src/screens/SpotDetailScreen';
+import AddSpotScreen from './src/screens/AddSpotScreen';
 
 // Firebase設定
 const firebaseConfig = {

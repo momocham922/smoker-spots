@@ -71,18 +71,45 @@ const SpotDetailScreen = () => {
         }
         
         // Firebaseからデータを取得
-        const { spot, error } = await getSmokerSpotById(spotId);
+        const { spot: spotData, error } = await getSmokerSpotById(spotId);
         
         if (error) {
-          console.error('喫煙所データの取得に失敗しました:', error);
+          // エラーの種類に応じた処理
+          if (error === 'Spot not found') {
+            console.log('指定された喫煙所が見つからないため、サンプルデータを使用します');
+          } else {
+            console.error('喫煙所データの取得に失敗しました:', error);
+          }
           // サンプルデータを使用
           setSpot(sampleSpot);
           setLoading(false);
           return;
         }
         
-        if (spot) {
-          setSpot(spot);
+        if (spotData) {
+          // Firestoreから取得したデータを完全なSmokerSpot型に変換
+          // TypeScriptの型チェックを回避するためにanyにキャスト
+          const rawSpot = spotData as any;
+          const completeSpot: SmokerSpot = {
+            id: rawSpot.id,
+            title: rawSpot.title || 'タイトルなし',
+            description: rawSpot.description || '説明なし',
+            location: rawSpot.location || { latitude: 35.681236, longitude: 139.768149 },
+            rating: rawSpot.rating || 0,
+            facilities: rawSpot.facilities || {
+              hasRoof: false,
+              hasSeating: false,
+              hasVendingMachine: false,
+              isIndoor: false
+            },
+            businessHours: rawSpot.businessHours || {
+              isOpen24Hours: true
+            },
+            createdBy: rawSpot.createdBy || '',
+            createdAt: rawSpot.createdAt,
+            updatedAt: rawSpot.updatedAt
+          };
+          setSpot(completeSpot);
         } else {
           // サンプルデータを使用
           setSpot(sampleSpot);

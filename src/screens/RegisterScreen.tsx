@@ -35,10 +35,10 @@ const RegisterScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState<boolean>(true);
   const [secureConfirmTextEntry, setSecureConfirmTextEntry] = useState<boolean>(true);
 
-  // マップ画面に遷移するハンドラー
-  const handleNavigateToMap = () => {
+  // メイン画面に遷移するハンドラー
+  const handleNavigateToMain = () => {
     // @ts-ignore
-    navigation.navigate('Map');
+    navigation.navigate('Main');
   };
 
   // ログイン画面に遷移するハンドラー
@@ -125,7 +125,7 @@ const RegisterScreen = () => {
           [
             {
               text: 'OK',
-              onPress: handleNavigateToMap
+              onPress: handleNavigateToMain
             }
           ]
         );
@@ -245,7 +245,7 @@ const RegisterScreen = () => {
 
         <TouchableOpacity
           style={styles.skipContainer}
-          onPress={handleNavigateToMap}
+          onPress={handleNavigateToMain}
         >
           <Text style={styles.skipText}>スキップしてアプリを使用</Text>
           <MaterialIcons name="arrow-forward" size={16} color={THEME_COLORS.primary} />

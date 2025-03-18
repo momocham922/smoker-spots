@@ -81,10 +81,10 @@ const FavoritesScreen = () => {
     navigation.navigate('Login');
   };
 
-  // マップ画面に遷移するハンドラー
-  const handleNavigateToMap = () => {
+  // メイン画面に遷移するハンドラー
+  const handleNavigateToMain = () => {
     // @ts-ignore
-    navigation.navigate('Map');
+    navigation.navigate('Main');
   };
 
   // 喫煙所アイテムをレンダリング
@@ -224,7 +224,7 @@ const FavoritesScreen = () => {
             <Text style={styles.emptyText}>喫煙所の詳細画面からお気に入りに追加できます。</Text>
             <Button 
               mode="contained" 
-              onPress={handleNavigateToMap}
+              onPress={handleNavigateToMain}
               style={styles.mapButton}
               labelStyle={styles.mapButtonLabel}
             >

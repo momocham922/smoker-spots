@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Appbar, Surface, Button, Divider, List, Avatar, Switch } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAuth, signOut } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { getUserProfile, logout } from '../services/firebase';
 import { UserProfile } from '../types';
 
@@ -54,7 +55,37 @@ const ProfileScreen = () => {
       const { profile, error } = await getUserProfile(userId);
       
       if (error) {
-        console.error('プロフィールデータの取得に失敗しました:', error);
+        if (error === 'User not found') {
+          // ユーザープロファイルが存在しない場合、新しいプロファイルを作成
+          const auth = getAuth();
+          const user = auth.currentUser;
+          
+          if (user) {
+            // Firestoreにユーザープロファイルを作成
+            const db = getFirestore();
+            await setDoc(doc(db, 'users', userId), {
+              email: user.email,
+              displayName: user.displayName || null,
+              photoURL: user.photoURL || null,
+              createdAt: new Date(),
+              stats: {
+                posts: 0,
+                reviews: 0,
+                favorites: 0
+              }
+            });
+            
+            // 再度プロファイルを取得
+            const { profile: newProfile } = await getUserProfile(userId);
+            if (newProfile) {
+              setProfile(newProfile as UserProfile);
+            }
+          } else {
+            console.error('プロフィールデータの取得に失敗しました:', error);
+          }
+        } else {
+          console.error('プロフィールデータの取得に失敗しました:', error);
+        }
         setLoading(false);
         return;
       }
@@ -102,9 +133,9 @@ const ProfileScreen = () => {
               setIsLoggedIn(false);
               setProfile(null);
               
-              // マップ画面に遷移
+              // メイン画面に遷移
               // @ts-ignore
-              navigation.navigate('Map');
+              navigation.navigate('Main');
             } catch (error) {
               console.error('ログアウトに失敗しました:', error);
               Alert.alert('エラー', 'ログアウトに失敗しました。もう一度お試しください。');

@@ -22,6 +22,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import SpotDetailScreen from './src/screens/SpotDetailScreen';
 import AddSpotScreen from './src/screens/AddSpotScreen';
+import AdminScreen from './src/screens/AdminScreen';
 
 // Firebase設定
 const firebaseConfig = {
@@ -241,6 +242,11 @@ export default function App() {
             name="Register"
             component={RegisterScreen}
             options={{ title: 'アカウント登録' }}
+          />
+          <Stack.Screen
+            name="Admin"
+            component={AdminScreen}
+            options={{ title: '管理者画面' }}
           />
         </Stack.Navigator>
       </NavigationContainer>

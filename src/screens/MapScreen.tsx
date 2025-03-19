@@ -267,7 +267,7 @@ const MapScreen = () => {
   const navigation = useNavigation();
   const mapRef = useRef<MapView>(null);
   const [currentLocation, setCurrentLocation] = useState<LocationType | null>(null);
-  const [spots, setSpots] = useState<SmokerSpot[]>(sampleSpots);
+  const [spots, setSpots] = useState<SmokerSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<SmokerSpot | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
@@ -317,15 +317,26 @@ const MapScreen = () => {
   useEffect(() => {
     const fetchSpots = async () => {
       try {
-        const { spots, error } = await getSmokerSpots();
+        console.log('Firestoreからデータを取得中...');
+        const { spots: fetchedSpots, error } = await getSmokerSpots();
+        
+        console.log('取得したデータ:', JSON.stringify(fetchedSpots, null, 2));
+        console.log('エラー:', error);
         
         if (error) {
           console.error('喫煙所データの取得に失敗しました:', error);
           return;
         }
         
-        if (spots && spots.length > 0) {
-          setSpots(spots);
+        if (fetchedSpots && fetchedSpots.length > 0) {
+          console.log(`${fetchedSpots.length}件の喫煙所データを取得しました`);
+          // 型キャストを行い、TypeScriptエラーを回避
+          const typedSpots = fetchedSpots as unknown as SmokerSpot[];
+          setSpots(typedSpots);
+        } else {
+          console.log('喫煙所データが見つかりませんでした');
+          // データが見つからない場合は空の配列を設定
+          setSpots([]);
         }
       } catch (error) {
         console.error('喫煙所データの取得に失敗しました:', error);

@@ -235,84 +235,28 @@ const SpotDetailScreen = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={THEME_COLORS.primary} />
-        <Text style={styles.loadingText}>喫煙所情報を読み込み中...</Text>
-      </View>
-    );
-  }
+  // メインコンテンツをレンダリング
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={THEME_COLORS.primary} />
+          <Text style={styles.loadingText}>読み込み中...</Text>
+        </View>
+      );
+    }
 
-  // spotがnullの場合は、エラーメッセージを表示
-  if (!spot) {
-    console.log('spotがnullです - これは予期しない状態です');
-    return (
-      <View style={styles.container}>
-        <Appbar.Header style={styles.header}>
-          <Appbar.BackAction onPress={() => navigation.goBack()} color="#FFFFFF" />
-          <Appbar.Content title="喫煙所の詳細" titleStyle={styles.headerTitle} />
-        </Appbar.Header>
-        
+    if (!spot) {
+      return (
         <View style={styles.errorContainer}>
-          <MaterialIcons name="error-outline" size={64} color={THEME_COLORS.error} />
-          <Text style={styles.errorText}>
-            指定された喫煙所のデータが見つかりませんでした。
-          </Text>
-          <Text style={styles.errorSubText}>
-            データベースが初期化されていない可能性があります。
-          </Text>
-          
-          <View style={styles.buttonGroup}>
-            <Button
-              mode="contained"
-              onPress={() => {
-                // @ts-ignore
-                navigation.navigate('Admin');
-              }}
-              style={[styles.actionButton, { backgroundColor: THEME_COLORS.primary }]}
-              icon="database"
-            >
-              データベースを初期化
-            </Button>
-            
-            <Button
-              mode="outlined"
-              onPress={() => navigation.goBack()}
-              style={[styles.actionButton, { marginTop: 12 }]}
-            >
-              戻る
-            </Button>
-          </View>
+          <MaterialIcons name="error-outline" size={48} color={THEME_COLORS.error} />
+          <Text style={styles.errorText}>喫煙所データを取得できませんでした</Text>
+          <Text style={styles.errorSubText}>ネットワーク接続を確認して再試行してください</Text>
         </View>
-      </View>
-    );
-  }
+      );
+    }
 
-  return (
-    <View style={styles.container}>
-      <Appbar.Header style={styles.header}>
-        <Appbar.BackAction onPress={() => navigation.goBack()} color="#FFFFFF" />
-        <Appbar.Content 
-          title={errorMessage ? "喫煙所の詳細 (サンプル)" : "喫煙所の詳細"} 
-          titleStyle={styles.headerTitle} 
-        />
-        <Appbar.Action 
-          icon={isFavorite ? "heart" : "heart-outline"} 
-          onPress={handleFavorite} 
-          color="#FFFFFF"
-          disabled={favoriteLoading}
-        />
-        <Appbar.Action icon="share" onPress={handleShare} color="#FFFFFF" />
-      </Appbar.Header>
-      
-      {errorMessage && (
-        <View style={styles.warningBanner}>
-          <MaterialIcons name="info-outline" size={20} color={THEME_COLORS.warning} />
-          <Text style={styles.warningText}>{errorMessage}</Text>
-        </View>
-      )}
-      
+    return (
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Surface style={styles.mapContainer}>
           <MapView
@@ -469,6 +413,38 @@ const SpotDetailScreen = () => {
           </Button>
         </Surface>
       </ScrollView>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Appbar.Header style={styles.header}>
+        <Appbar.BackAction onPress={() => navigation.goBack()} color="#FFFFFF" />
+        <Appbar.Content
+          title={errorMessage ? "喫煙所の詳細 (サンプル)" : "喫煙所の詳細"}
+          titleStyle={styles.headerTitle}
+        />
+        {!loading && spot && (
+          <>
+            <Appbar.Action
+              icon={isFavorite ? "heart" : "heart-outline"}
+              onPress={handleFavorite}
+              color="#FFFFFF"
+              disabled={favoriteLoading}
+            />
+            <Appbar.Action icon="share" onPress={handleShare} color="#FFFFFF" />
+          </>
+        )}
+      </Appbar.Header>
+      
+      {errorMessage && (
+        <View style={styles.warningBanner}>
+          <MaterialIcons name="info-outline" size={20} color={THEME_COLORS.warning} />
+          <Text style={styles.warningText}>{errorMessage}</Text>
+        </View>
+      )}
+      
+      {renderContent()}
     </View>
   );
 };

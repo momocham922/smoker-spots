@@ -201,20 +201,19 @@ const FavoritesScreen = () => {
           </Surface>
         </View>
       ) : !isLoggedIn ? (
-        <View style={styles.emptyContainer}>
-          <Surface style={styles.emptyBox}>
-            <MaterialIcons name="lock" size={64} color={THEME_COLORS.disabled} />
-            <Text style={styles.emptyTitle}>ログインが必要です</Text>
-            <Text style={styles.emptyText}>お気に入り機能を利用するには、ログインが必要です。</Text>
-            <Button 
-              mode="contained" 
-              onPress={handleLogin}
-              style={styles.loginButton}
-              labelStyle={styles.loginButtonLabel}
-            >
-              ログインする
-            </Button>
-          </Surface>
+        <View style={styles.notLoggedInContainer}>
+          <MaterialIcons name="account-circle" size={80} color={THEME_COLORS.disabled} />
+          <Text style={styles.notLoggedInTitle}>ログインが必要です</Text>
+          <Text style={styles.notLoggedInText}>
+            お気に入り機能を利用するには、ログインが必要です。
+          </Text>
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+            style={styles.loginButton}
+          >
+            ログインする
+          </Button>
         </View>
       ) : favoriteSpots.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -290,6 +289,27 @@ const styles = StyleSheet.create({
     color: THEME_COLORS.primary,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
   },
+  notLoggedInContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  notLoggedInTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: THEME_COLORS.text,
+    marginTop: 16,
+    marginBottom: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif-medium',
+  },
+  notLoggedInText: {
+    fontSize: 16,
+    color: THEME_COLORS.placeholder,
+    textAlign: 'center',
+    marginBottom: 24,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -327,10 +347,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   loginButton: {
-    marginTop: 16,
     backgroundColor: THEME_COLORS.primary,
+    paddingHorizontal: 24,
     borderRadius: 8,
-    paddingHorizontal: 16,
   },
   loginButtonLabel: {
     fontWeight: '600',

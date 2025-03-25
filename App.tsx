@@ -226,7 +226,7 @@ export default function App() {
           <Stack.Screen
             name="SpotDetail"
             component={SpotDetailScreen}
-            options={{ title: '喫煙所の詳細' }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="AddSpot"

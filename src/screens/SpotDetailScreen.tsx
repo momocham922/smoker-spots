@@ -1,41 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Image, TouchableOpacity, Platform, Linking, Share, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, Linking, Share, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Appbar, Surface, Divider, Button, Chip, ActivityIndicator } from 'react-native-paper';
-import { MaterialIcons, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { Appbar, Surface, Divider, Button, ActivityIndicator } from 'react-native-paper';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import { getSmokerSpotById, saveFavoriteSpot, removeFavoriteSpot } from '../services/firebase';
 import { SmokerSpot } from '../types';
 import { getAuth } from 'firebase/auth';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 // テーマカラー
 const THEME_COLORS = {
-  primary: '#7C3AED', // メインカラー（ビビッドな紫）
-  accent: '#F43F5E', // アクセントカラー（ビビッドなピンク）
-  background: '#F9FAFB', // 背景色（明るいグレー）
-  surface: '#FFFFFF', // サーフェス色（白）
-  text: '#1F2937', // テキスト色（濃いグレー）
-  disabled: '#9CA3AF', // 無効時の色（中間グレー）
-  placeholder: '#6B7280', // プレースホルダー色（グレー）
-  success: '#10B981', // 成功色（緑）
-  warning: '#F59E0B', // 警告色（オレンジ）
-  error: '#EF4444', // エラー色（赤）
-  info: '#3B82F6', // 情報色（青）
-  lightPurple: '#EDE9FE', // 薄い紫（背景用）
-  darkPurple: '#4C1D95', // 濃い紫
-  border: '#E5E7EB', // ボーダー色
+  primary: '#7C3AED',
+  accent: '#F43F5E',
+  background: '#F9FAFB',
+  surface: '#FFFFFF',
+  text: '#1F2937',
+  disabled: '#9CA3AF',
+  placeholder: '#6B7280',
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  info: '#3B82F6',
+  lightPurple: '#EDE9FE',
+  darkPurple: '#4C1D95',
+  border: '#E5E7EB',
 };
 
-const SpotDetailScreen = () => {
+const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation }) => {
   const route = useRoute();
-  const navigation = useNavigation();
   const [spot, setSpot] = useState<SmokerSpot | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [favoriteLoading, setFavoriteLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // サンプルデータ（Firebaseからのデータ取得が実装されるまでの仮データ）
+  // React Navigationのヘッダーを非表示にする
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false
+    });
+  }, [navigation]);
+
+  // サンプルデータ
   const sampleSpot: SmokerSpot = {
     id: '1',
     title: '東京駅八重洲口喫煙所',
@@ -59,7 +66,6 @@ const SpotDetailScreen = () => {
     updatedAt: null
   };
 
-  // 喫煙所データを取得
   useEffect(() => {
     const fetchSpotDetails = async () => {
       try {
@@ -68,74 +74,25 @@ const SpotDetailScreen = () => {
         
         if (!spotId) {
           console.log('喫煙所IDが指定されていません');
-          // IDが指定されていない場合もサンプルデータを使用
           setSpot(sampleSpot);
           setLoading(false);
           return;
         }
         
-        console.log('喫煙所ID:', spotId);
+        const response = await getSmokerSpotById(spotId);
         
-        // Firebaseからデータを取得
-        const { spot: spotData, error } = await getSmokerSpotById(spotId);
-        
-        console.log('取得したデータ:', JSON.stringify(spotData, null, 2));
-        console.log('エラー:', error);
-        
-        if (error) {
-          // エラーの種類に応じた処理
-          if (error === 'Spot not found') {
-            console.log('指定された喫煙所が見つからないため、サンプルデータを使用します');
+        if (response.error) {
+          if (response.error === 'Spot not found') {
             setErrorMessage('指定された喫煙所が見つかりません。サンプルデータを表示しています。');
-            // デバッグ情報はコンソールに出力
-            console.log(`デバッグ情報: 喫煙所ID: ${spotId} が見つかりません`);
           } else {
-            console.error('喫煙所データの取得に失敗しました:', error);
             setErrorMessage('喫煙所データの取得に失敗しました。サンプルデータを表示しています。');
-            console.log(`デバッグ情報: エラー: ${error}`);
           }
-          // サンプルデータを使用
           setSpot(sampleSpot);
-          setLoading(false);
-          return;
-        }
-        
-        if (spotData) {
-          // Firestoreから取得したデータを完全なSmokerSpot型に変換
-          // TypeScriptの型チェックを回避するためにanyにキャスト
-          const rawSpot = spotData as any;
-          
-          // デバッグ情報をコンソールに出力（アラートは表示しない）
-          console.log('取得したデータ:', 
-            `ID: ${rawSpot.id}, ` +
-            `タイトル: ${rawSpot.title || 'なし'}, ` +
-            `説明: ${rawSpot.description ? (rawSpot.description.substring(0, 30) + '...') : 'なし'}`
-          );
-          
-          const completeSpot: SmokerSpot = {
-            id: rawSpot.id,
-            title: rawSpot.title || 'タイトルなし',
-            description: rawSpot.description || '説明なし',
-            location: rawSpot.location || { latitude: 35.681236, longitude: 139.768149 },
-            rating: rawSpot.rating || 0,
-            facilities: rawSpot.facilities || {
-              hasRoof: false,
-              hasSeating: false,
-              hasVendingMachine: false,
-              isIndoor: false
-            },
-            businessHours: rawSpot.businessHours || {
-              isOpen24Hours: true
-            },
-            createdBy: rawSpot.createdBy || '',
-            createdAt: rawSpot.createdAt,
-            updatedAt: rawSpot.updatedAt
-          };
-          setSpot(completeSpot);
+        } else if (response.spot) {
+          const spotData = response.spot as SmokerSpot;
+          setSpot(spotData);
         } else {
-          // サンプルデータを使用
           setErrorMessage('喫煙所データがnullです。サンプルデータを表示しています。');
-          console.log('デバッグ情報: spotDataがnullです');
           setSpot(sampleSpot);
         }
         
@@ -143,8 +100,6 @@ const SpotDetailScreen = () => {
       } catch (error) {
         console.error('喫煙所データの取得に失敗しました:', error);
         setErrorMessage('例外が発生しました。サンプルデータを表示しています。');
-        console.log(`デバッグ情報: 例外: ${error}`);
-        // サンプルデータを使用
         setSpot(sampleSpot);
         setLoading(false);
       }
@@ -153,7 +108,6 @@ const SpotDetailScreen = () => {
     fetchSpotDetails();
   }, []);
 
-  // お気に入りボタンのハンドラー
   const handleFavorite = async () => {
     try {
       setFavoriteLoading(true);
@@ -173,7 +127,6 @@ const SpotDetailScreen = () => {
       }
       
       if (isFavorite) {
-        // お気に入りから削除
         const { success, error } = await removeFavoriteSpot(spot.id, user.uid);
         
         if (success) {
@@ -181,10 +134,8 @@ const SpotDetailScreen = () => {
           Alert.alert('削除しました', 'お気に入りから削除しました。');
         } else {
           Alert.alert('エラー', '削除に失敗しました。');
-          console.error('お気に入りの削除に失敗しました:', error);
         }
       } else {
-        // お気に入りに追加
         const { success, error } = await saveFavoriteSpot(spot.id, user.uid);
         
         if (success) {
@@ -192,19 +143,16 @@ const SpotDetailScreen = () => {
           Alert.alert('保存しました', 'お気に入りに追加しました。');
         } else {
           Alert.alert('エラー', '保存に失敗しました。');
-          console.error('お気に入りの保存に失敗しました:', error);
         }
       }
       
       setFavoriteLoading(false);
     } catch (error) {
       Alert.alert('エラー', '操作に失敗しました。');
-      console.error('お気に入り操作に失敗しました:', error);
       setFavoriteLoading(false);
     }
   };
 
-  // 地図アプリで開くハンドラー
   const handleOpenInMaps = () => {
     if (!spot) return;
     
@@ -221,7 +169,6 @@ const SpotDetailScreen = () => {
     }
   };
 
-  // シェアハンドラー
   const handleShare = async () => {
     if (!spot) return;
     
@@ -235,28 +182,37 @@ const SpotDetailScreen = () => {
     }
   };
 
-  // メインコンテンツをレンダリング
-  const renderContent = () => {
-    if (loading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={THEME_COLORS.primary} />
-          <Text style={styles.loadingText}>読み込み中...</Text>
-        </View>
-      );
-    }
-
-    if (!spot) {
-      return (
-        <View style={styles.errorContainer}>
+  let content;
+  if (loading) {
+    content = (
+      <View style={styles.loadingContainer}>
+        <Surface style={styles.loadingBox}>
+          <MaterialCommunityIcons name="smoking" size={64} color={THEME_COLORS.primary} />
+          <ActivityIndicator size="large" color={THEME_COLORS.primary} style={styles.loadingIndicator} />
+          <Text style={styles.loadingText}>喫煙所データを読み込み中...</Text>
+        </Surface>
+      </View>
+    );
+  } else if (!spot) {
+    content = (
+      <View style={styles.errorContainer}>
+        <Surface style={styles.errorBox}>
           <MaterialIcons name="error-outline" size={48} color={THEME_COLORS.error} />
           <Text style={styles.errorText}>喫煙所データを取得できませんでした</Text>
           <Text style={styles.errorSubText}>ネットワーク接続を確認して再試行してください</Text>
-        </View>
-      );
-    }
-
-    return (
+          <Button
+            mode="contained"
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            labelStyle={styles.backButtonLabel}
+          >
+            戻る
+          </Button>
+        </Surface>
+      </View>
+    );
+  } else {
+    content = (
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Surface style={styles.mapContainer}>
           <MapView
@@ -287,7 +243,7 @@ const SpotDetailScreen = () => {
             </Marker>
           </MapView>
           
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.openInMapsButton}
             onPress={handleOpenInMaps}
           >
@@ -414,7 +370,7 @@ const SpotDetailScreen = () => {
         </Surface>
       </ScrollView>
     );
-  };
+  }
 
   return (
     <View style={styles.container}>
@@ -436,15 +392,17 @@ const SpotDetailScreen = () => {
           </>
         )}
       </Appbar.Header>
-      
+
       {errorMessage && (
         <View style={styles.warningBanner}>
           <MaterialIcons name="info-outline" size={20} color={THEME_COLORS.warning} />
           <Text style={styles.warningText}>{errorMessage}</Text>
         </View>
       )}
-      
-      {renderContent()}
+
+      <View style={styles.contentContainer}>
+        {content}
+      </View>
     </View>
   );
 };
@@ -466,6 +424,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Heavy' : 'sans-serif-medium',
   },
+  contentContainer: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
   },
@@ -475,10 +436,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: THEME_COLORS.background,
   },
+  loadingBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 30,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  loadingIndicator: {
+    marginTop: 20,
+  },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: THEME_COLORS.text,
+    fontWeight: '600',
+    color: THEME_COLORS.primary,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
   },
   errorContainer: {
@@ -487,6 +464,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: THEME_COLORS.background,
     padding: 20,
+  },
+  errorBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 30,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
+    width: '100%',
+    maxWidth: 400,
   },
   errorText: {
     marginTop: 16,
@@ -503,13 +494,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Book' : 'sans-serif',
   },
-  buttonGroup: {
-    width: '100%',
-    paddingHorizontal: 20,
-  },
-  actionButton: {
+  backButton: {
+    marginTop: 16,
+    backgroundColor: THEME_COLORS.primary,
     borderRadius: 8,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  backButtonLabel: {
+    fontWeight: '600',
+    fontSize: 14,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
   },
   warningBanner: {
     flexDirection: 'row',
@@ -526,10 +520,6 @@ const styles = StyleSheet.create({
     color: THEME_COLORS.text,
     flex: 1,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif-medium',
-  },
-  backButton: {
-    backgroundColor: THEME_COLORS.primary,
-    paddingHorizontal: 16,
   },
   mapContainer: {
     margin: 16,

@@ -89,19 +89,19 @@ const FavoritesScreen = () => {
     navigation.navigate('Main');
   };
 
-  // 喫煙所アイテムをレンダリング
+  // 喫煙所アイテムをレンダリング（コンパクト版）
   const renderSpotItem = ({ item }: { item: SmokerSpot }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       onPress={() => handleViewDetails(item)}
       style={styles.cardContainer}
       activeOpacity={0.7}
     >
       <Card style={styles.card} elevation={3}>
-        <Card.Content>
+        <Card.Content style={styles.cardContent}>
           <View style={styles.cardHeader}>
             <View style={styles.titleContainer}>
               <MaterialCommunityIcons name="smoking" size={20} color={THEME_COLORS.primary} style={styles.titleIcon} />
-              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{item.title}</Text>
             </View>
             <View style={styles.ratingContainer}>
               <MaterialIcons name="star" size={16} color="#FFD700" />
@@ -109,73 +109,49 @@ const FavoritesScreen = () => {
             </View>
           </View>
           
-          <Text style={styles.description}>{item.description}</Text>
-          
-          <View style={styles.facilitiesContainer}>
-            {item.facilities.hasRoof && (
-              <Chip 
-                icon="umbrella" 
-                style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]} 
-                textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-              >
-                屋根
-              </Chip>
-            )}
-            {item.facilities.hasSeating && (
-              <Chip 
-                icon="seat" 
-                style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]} 
-                textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-              >
-                座席
-              </Chip>
-            )}
-            {item.facilities.hasVendingMachine && (
-              <Chip 
-                icon="coffee" 
-                style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]} 
-                textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-              >
-                自販機
-              </Chip>
-            )}
-            {item.facilities.isIndoor ? (
-              <Chip 
-                icon="home" 
-                style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]} 
-                textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-              >
-                屋内
-              </Chip>
-            ) : (
-              <Chip 
-                icon="tree" 
-                style={[styles.facilityChip, { backgroundColor: THEME_COLORS.lightPurple }]} 
-                textStyle={{ color: THEME_COLORS.primary, fontWeight: '600' }}
-              >
-                屋外
-              </Chip>
-            )}
-          </View>
-          
-          <Divider style={styles.divider} />
-          
-          <View style={styles.footer}>
+          <View style={styles.infoRow}>
             <View style={styles.hoursContainer}>
-              <MaterialIcons name="access-time" size={16} color={THEME_COLORS.text} />
-              <Text style={styles.hours}>
-                {item.businessHours.isOpen24Hours 
-                  ? '24時間営業' 
+              <MaterialIcons name="access-time" size={14} color={THEME_COLORS.text} />
+              <Text style={styles.hoursText} numberOfLines={1}>
+                {item.businessHours.isOpen24Hours
+                  ? '24時間'
                   : `${item.businessHours.openingTime}〜${item.businessHours.closingTime}`
                 }
               </Text>
             </View>
-            <Button 
-              mode="text" 
-              icon="chevron-right" 
+          </View>
+          
+          <View style={styles.facilitiesContainer}>
+            {item.facilities.hasRoof && (
+              <View style={styles.facilityItem}>
+                <MaterialCommunityIcons name="umbrella" size={14} color={THEME_COLORS.primary} />
+              </View>
+            )}
+            {item.facilities.hasSeating && (
+              <View style={styles.facilityItem}>
+                <MaterialCommunityIcons name="seat" size={14} color={THEME_COLORS.primary} />
+              </View>
+            )}
+            {item.facilities.hasVendingMachine && (
+              <View style={styles.facilityItem}>
+                <MaterialCommunityIcons name="coffee" size={14} color={THEME_COLORS.primary} />
+              </View>
+            )}
+            <View style={styles.facilityItem}>
+              <MaterialCommunityIcons
+                name={item.facilities.isIndoor ? "home" : "tree"}
+                size={14}
+                color={THEME_COLORS.primary}
+              />
+            </View>
+            
+            <Button
+              mode="text"
+              icon="chevron-right"
               textColor={THEME_COLORS.primary}
               contentStyle={{ flexDirection: 'row-reverse' }}
-              labelStyle={{ marginRight: -8 }}
+              labelStyle={{ marginRight: -8, fontSize: 12 }}
+              style={styles.detailButton}
             >
               詳細
             </Button>
@@ -374,17 +350,20 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   cardContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
+  },
+  cardContent: {
+    padding: 12,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   titleContainer: {
     flexDirection: 'row',
@@ -395,7 +374,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: THEME_COLORS.text,
     flex: 1,
@@ -405,50 +384,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 215, 0, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
   },
   rating: {
     marginLeft: 4,
     fontWeight: 'bold',
     color: '#FFD700',
+    fontSize: 12,
   },
-  description: {
-    fontSize: 14,
-    color: THEME_COLORS.text,
-    marginBottom: 12,
-    lineHeight: 20,
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Book' : 'sans-serif',
-  },
-  facilitiesContainer: {
+  infoRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 12,
-  },
-  facilityChip: {
-    margin: 2,
-    height: 32,
-  },
-  divider: {
-    marginVertical: 12,
-    height: 1,
-    backgroundColor: THEME_COLORS.border,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 8,
   },
   hoursContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  hours: {
-    marginLeft: 8,
-    fontSize: 14,
+  hoursText: {
+    marginLeft: 4,
+    fontSize: 12,
     color: THEME_COLORS.text,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
+  },
+  facilitiesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  facilityItem: {
+    marginRight: 12,
+  },
+  detailButton: {
+    marginLeft: 'auto',
+    padding: 0,
   },
 });
 

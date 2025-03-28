@@ -272,31 +272,45 @@ const MapScreen = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [filterVisible, setFilterVisible] = useState<boolean>(false);
 
-  // 現在地を取得
+  // 初期化処理
   useEffect(() => {
-    (async () => {
+    const initialize = async () => {
       try {
+        // 1. 位置情報の許可を取得
         const { status } = await Location.requestForegroundPermissionsAsync();
-        
         if (status !== 'granted') {
           Alert.alert(
             '位置情報の許可が必要です',
             '近くの喫煙所を表示するには、位置情報の許可が必要です。',
             [{ text: 'OK' }]
           );
+          setSpots(sampleSpots); // 許可がない場合もサンプルデータを表示
           setLoading(false);
           return;
         }
+
+        // 2. 喫煙所データを取得
+        console.log('Firestoreからデータを取得中...');
+        const { spots: fetchedSpots, error } = await getSmokerSpots();
         
+        if (error || !fetchedSpots || fetchedSpots.length === 0) {
+          console.log('サンプルデータを使用します');
+          setSpots(sampleSpots);
+        } else {
+          console.log(`${fetchedSpots.length}件の喫煙所データを取得しました`);
+          const typedSpots = fetchedSpots as unknown as SmokerSpot[];
+          setSpots(typedSpots);
+        }
+
+        // 3. 現在位置を取得
         const location = await Location.getCurrentPositionAsync({});
         const currentLocation = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude
         };
-        
         setCurrentLocation(currentLocation);
-        
-        // 地図の表示領域を現在地に設定
+
+        // 4. 地図の表示領域を設定
         if (mapRef.current) {
           mapRef.current.animateToRegion({
             ...currentLocation,
@@ -304,46 +318,16 @@ const MapScreen = () => {
             longitudeDelta: 0.01
           });
         }
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('位置情報の取得に失敗しました:', error);
-        setLoading(false);
-      }
-    })();
-  }, []);
 
-  // 喫煙所データを取得
-  useEffect(() => {
-    const fetchSpots = async () => {
-      try {
-        console.log('Firestoreからデータを取得中...');
-        const { spots: fetchedSpots, error } = await getSmokerSpots();
-        
-        if (error) {
-          console.error('喫煙所データの取得に失敗しました:', error);
-          // エラー時はサンプルデータを使用
-          setSpots(sampleSpots);
-          return;
-        }
-        
-        if (fetchedSpots && fetchedSpots.length > 0) {
-          console.log(`${fetchedSpots.length}件の喫煙所データを取得しました`);
-          const typedSpots = fetchedSpots as unknown as SmokerSpot[];
-          setSpots(typedSpots);
-        } else {
-          console.log('喫煙所データが見つかりませんでした');
-          // データが見つからない場合はサンプルデータを使用
-          setSpots(sampleSpots);
-        }
+        setLoading(false);
       } catch (error) {
-        console.error('喫煙所データの取得に失敗しました:', error);
-        // エラー時はサンプルデータを使用
-        setSpots(sampleSpots);
+        console.error('初期化中にエラーが発生しました:', error);
+        setSpots(sampleSpots); // エラー時もサンプルデータを表示
+        setLoading(false);
       }
     };
-    
-    fetchSpots();
+
+    initialize();
   }, []);
 
   // 現在地ボタンのハンドラー

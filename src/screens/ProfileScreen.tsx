@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Appbar, Surface, Button, Divider, List, Avatar, Switch } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getAuth, signOut } from 'firebase/auth';
@@ -34,19 +34,21 @@ const ProfileScreen = () => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
 
-  // ログイン状態とプロフィールデータを取得
-  useEffect(() => {
-    const auth = getAuth();
-    const user = auth.currentUser;
+  // 画面がフォーカスされた時にプロフィールデータを再取得
+  useFocusEffect(
+    React.useCallback(() => {
+      const auth = getAuth();
+      const user = auth.currentUser;
 
-    if (user) {
-      setIsLoggedIn(true);
-      fetchUserProfile(user.uid);
-    } else {
-      setIsLoggedIn(false);
-      setLoading(false);
-    }
-  }, []);
+      if (user) {
+        setIsLoggedIn(true);
+        fetchUserProfile(user.uid);
+      } else {
+        setIsLoggedIn(false);
+        setLoading(false);
+      }
+    }, [])
+  );
 
   // ユーザープロフィールを取得
   const fetchUserProfile = async (userId: string) => {

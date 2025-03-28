@@ -320,26 +320,26 @@ const MapScreen = () => {
         console.log('Firestoreからデータを取得中...');
         const { spots: fetchedSpots, error } = await getSmokerSpots();
         
-        console.log('取得したデータ:', JSON.stringify(fetchedSpots, null, 2));
-        console.log('エラー:', error);
-        
         if (error) {
           console.error('喫煙所データの取得に失敗しました:', error);
+          // エラー時はサンプルデータを使用
+          setSpots(sampleSpots);
           return;
         }
         
         if (fetchedSpots && fetchedSpots.length > 0) {
           console.log(`${fetchedSpots.length}件の喫煙所データを取得しました`);
-          // 型キャストを行い、TypeScriptエラーを回避
           const typedSpots = fetchedSpots as unknown as SmokerSpot[];
           setSpots(typedSpots);
         } else {
           console.log('喫煙所データが見つかりませんでした');
-          // データが見つからない場合は空の配列を設定
-          setSpots([]);
+          // データが見つからない場合はサンプルデータを使用
+          setSpots(sampleSpots);
         }
       } catch (error) {
         console.error('喫煙所データの取得に失敗しました:', error);
+        // エラー時はサンプルデータを使用
+        setSpots(sampleSpots);
       }
     };
     

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList, TouchableOpacity, Text, Platform, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Appbar, Card, Chip, Surface, Button, ActivityIndicator, Divider } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getFavoriteSpots } from '../services/firebase';
@@ -31,19 +31,21 @@ const FavoritesScreen = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  // ログイン状態とお気に入りデータを取得
-  useEffect(() => {
-    const auth = getAuth();
-    const user = auth.currentUser;
+  // 画面がフォーカスされた時にデータを再取得
+  useFocusEffect(
+    React.useCallback(() => {
+      const auth = getAuth();
+      const user = auth.currentUser;
 
-    if (user) {
-      setIsLoggedIn(true);
-      fetchFavoriteSpots(user.uid);
-    } else {
-      setIsLoggedIn(false);
-      setLoading(false);
-    }
-  }, []);
+      if (user) {
+        setIsLoggedIn(true);
+        fetchFavoriteSpots(user.uid);
+      } else {
+        setIsLoggedIn(false);
+        setLoading(false);
+      }
+    }, [])
+  );
 
   // お気に入りの喫煙所データを取得
   const fetchFavoriteSpots = async (userId: string) => {

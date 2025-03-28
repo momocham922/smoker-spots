@@ -4,7 +4,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Appbar, Surface, Divider, Button, ActivityIndicator } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
-import { getSmokerSpotById, saveFavoriteSpot, removeFavoriteSpot } from '../services/firebase';
+import { getSmokerSpotById, saveFavoriteSpot, removeFavoriteSpot, getFavoriteSpots } from '../services/firebase';
 import { SmokerSpot } from '../types';
 import { getAuth } from 'firebase/auth';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -71,6 +71,8 @@ const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation })
       try {
         // @ts-ignore
         const spotId = route.params?.spotId;
+        const auth = getAuth();
+        const user = auth.currentUser;
         
         if (!spotId) {
           console.log('喫煙所IDが指定されていません');
@@ -91,6 +93,14 @@ const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation })
         } else if (response.spot) {
           const spotData = response.spot as SmokerSpot;
           setSpot(spotData);
+          
+          // お気に入りの状態を確認
+          if (user) {
+            const { spots } = await getFavoriteSpots(user.uid);
+            if (spots && spots.some(spot => spot.id === spotId)) {
+              setIsFavorite(true);
+            }
+          }
         } else {
           setErrorMessage('喫煙所データがnullです。サンプルデータを表示しています。');
           setSpot(sampleSpot);

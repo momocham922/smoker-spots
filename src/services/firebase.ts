@@ -131,16 +131,15 @@ export const saveFavoriteSpot = async (spotId: string, userId: string) => {
       savedAt: serverTimestamp()
     });
     
-    // ユーザーのお気に入り数を更新
-    const userRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userRef);
+    // 実際のお気に入り数を取得して更新
+    const favoritesRef = collection(db, 'users', userId, 'favorites');
+    const favoritesSnapshot = await getDocs(favoritesRef);
+    const favoriteCount = favoritesSnapshot.docs.length;
     
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      await updateDoc(userRef, {
-        'stats.favorites': (userData.stats?.favorites || 0) + 1
-      });
-    }
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      'stats.favorites': favoriteCount
+    });
     
     return { success: true, error: null };
   } catch (error) {
@@ -153,17 +152,15 @@ export const removeFavoriteSpot = async (spotId: string, userId: string) => {
     const favoriteRef = doc(db, 'users', userId, 'favorites', spotId);
     await deleteDoc(favoriteRef);
     
-    // ユーザーのお気に入り数を更新
-    const userRef = doc(db, 'users', userId);
-    const userDoc = await getDoc(userRef);
+    // 実際のお気に入り数を取得して更新
+    const favoritesRef = collection(db, 'users', userId, 'favorites');
+    const favoritesSnapshot = await getDocs(favoritesRef);
+    const favoriteCount = favoritesSnapshot.docs.length;
     
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      const currentFavorites = userData.stats?.favorites || 0;
-      await updateDoc(userRef, {
-        'stats.favorites': Math.max(0, currentFavorites - 1)
-      });
-    }
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      'stats.favorites': favoriteCount
+    });
     
     return { success: true, error: null };
   } catch (error) {
@@ -177,6 +174,16 @@ export const getFavoriteSpots = async (userId: string) => {
     const favoritesSnapshot = await getDocs(favoritesRef);
     
     const favoriteIds = favoritesSnapshot.docs.map(doc => doc.id);
+    
+    // ユーザーのお気に入り数を実際の数で更新
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      await updateDoc(userRef, {
+        'stats.favorites': favoriteIds.length
+      });
+    }
     
     if (favoriteIds.length === 0) {
       return { spots: [], error: null };

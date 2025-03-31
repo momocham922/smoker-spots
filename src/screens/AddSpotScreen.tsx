@@ -172,10 +172,12 @@ const AddSpotScreen = () => {
           hasVendingMachine,
           isIndoor
         },
-        businessHours: {
-          isOpen24Hours,
-          openingTime: isOpen24Hours ? undefined : openingTime,
-          closingTime: isOpen24Hours ? undefined : closingTime
+        businessHours: isOpen24Hours ? {
+          isOpen24Hours: true
+        } : {
+          isOpen24Hours: false,
+          openingTime,
+          closingTime
         }
       };
       
@@ -197,7 +199,7 @@ const AddSpotScreen = () => {
             text: 'OK',
             onPress: () => {
               // @ts-ignore
-              navigation.navigate('Map');
+              navigation.navigate('Main', { screen: 'Map' });
             }
           }
         ]
@@ -311,7 +313,8 @@ const AddSpotScreen = () => {
               <Switch
                 value={isIndoor}
                 onValueChange={setIsIndoor}
-                color={THEME_COLORS.primary}
+                trackColor={{ false: '#767577', true: THEME_COLORS.primary }}
+                thumbColor={isIndoor ? THEME_COLORS.primary : '#f4f3f4'}
                 style={styles.switch}
               />
               <Text style={[
@@ -361,7 +364,8 @@ const AddSpotScreen = () => {
             <Switch
               value={isOpen24Hours}
               onValueChange={setIsOpen24Hours}
-              color={THEME_COLORS.primary}
+              trackColor={{ false: '#767577', true: THEME_COLORS.primary }}
+              thumbColor={isOpen24Hours ? THEME_COLORS.primary : '#f4f3f4'}
             />
           </View>
           

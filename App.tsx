@@ -232,7 +232,7 @@ export default function App() {
           <Stack.Screen
             name="AddSpot"
             component={AddSpotScreen}
-            options={{ title: '喫煙所を追加' }}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="Login"

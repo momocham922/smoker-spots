@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 100, // タブバーの高さ + 追加のパディング
   },
   cardContainer: {
     marginBottom: 12,

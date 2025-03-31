@@ -124,17 +124,18 @@ function MainTabs() {
         tabBarStyle: {
           elevation: 12,
           backgroundColor: '#FFFFFF',
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          height: 70,
-          paddingBottom: 10,
-          paddingTop: 10,
+          height: 85, // タブバーの高さを増加
+          paddingBottom: 25, // 下部のパディングを増加（iPhoneのホームバー対応）
+          paddingTop: 8,
           position: 'absolute',
+          bottom: 0, // 画面下端まで背景を表示
+          left: 0,
+          right: 0,
           borderTopWidth: 0,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
+          shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
-          shadowRadius: 8,
+          shadowRadius: 4,
         },
         tabBarItemStyle: {
           paddingVertical: 5,

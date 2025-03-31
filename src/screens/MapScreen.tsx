@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     margin: 16,
     right: 0,
-    bottom: 16,
+    bottom: 80, // タブバーの高さ + マージン
     backgroundColor: THEME_COLORS.primary,
     borderRadius: 28,
     elevation: 6,

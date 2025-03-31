@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     margin: 16,
     marginTop: 8,
-    marginBottom: 32,
+    marginBottom: 100, // タブバーの高さ + 追加のパディング
     borderColor: THEME_COLORS.error,
     borderRadius: 8,
   },

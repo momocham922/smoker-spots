@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, ScrollView, Platform, Alert, TouchableOpacity, Switch, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Platform, Alert, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Appbar, TextInput, Button, Surface, Divider, HelperText, Checkbox } from 'react-native-paper';
+import { Appbar, TextInput, Button, Surface, Divider, HelperText, Checkbox, Switch, List } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -301,30 +301,20 @@ const AddSpotScreen = () => {
           
           <Text style={styles.sectionTitle}>設備情報</Text>
           
-          <View style={styles.switchContainer}>
-            <Text style={styles.switchLabel}>屋内/屋外</Text>
-            <View style={styles.switchOption}>
-              <Text style={[
-                styles.switchOptionText,
-                !isIndoor && styles.switchOptionTextActive
-              ]}>
-                屋外
-              </Text>
+          <List.Item
+            title="屋内/屋外"
+            description={isIndoor ? "屋内" : "屋外"}
+            right={() => (
               <Switch
                 value={isIndoor}
                 onValueChange={setIsIndoor}
-                trackColor={{ false: '#767577', true: THEME_COLORS.primary }}
-                thumbColor={isIndoor ? THEME_COLORS.primary : '#f4f3f4'}
-                style={styles.switch}
+                color={THEME_COLORS.primary}
               />
-              <Text style={[
-                styles.switchOptionText,
-                isIndoor && styles.switchOptionTextActive
-              ]}>
-                屋内
-              </Text>
-            </View>
-          </View>
+            )}
+            style={styles.menuItem}
+            titleStyle={styles.menuTitle}
+            descriptionStyle={styles.menuDescription}
+          />
           
           <View style={styles.checkboxContainer}>
             <Checkbox.Item
@@ -359,15 +349,18 @@ const AddSpotScreen = () => {
           
           <Text style={styles.sectionTitle}>営業時間</Text>
           
-          <View style={styles.switchContainer}>
-            <Text style={styles.switchLabel}>24時間営業</Text>
-            <Switch
-              value={isOpen24Hours}
-              onValueChange={setIsOpen24Hours}
-              trackColor={{ false: '#767577', true: THEME_COLORS.primary }}
-              thumbColor={isOpen24Hours ? THEME_COLORS.primary : '#f4f3f4'}
-            />
-          </View>
+          <List.Item
+            title="24時間営業"
+            right={() => (
+              <Switch
+                value={isOpen24Hours}
+                onValueChange={setIsOpen24Hours}
+                color={THEME_COLORS.primary}
+              />
+            )}
+            style={styles.menuItem}
+            titleStyle={styles.menuTitle}
+          />
           
           {!isOpen24Hours && (
             <View style={styles.timeContainer}>
@@ -498,34 +491,6 @@ const styles = StyleSheet.create({
     color: THEME_COLORS.placeholder,
     fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
   },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  switchLabel: {
-    fontSize: 16,
-    color: THEME_COLORS.text,
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
-  },
-  switchOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  switchOptionText: {
-    fontSize: 14,
-    color: THEME_COLORS.disabled,
-    marginHorizontal: 8,
-    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
-  },
-  switchOptionTextActive: {
-    color: THEME_COLORS.primary,
-    fontWeight: 'bold',
-  },
-  switch: {
-    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-  },
   checkboxContainer: {
     marginBottom: 8,
   },
@@ -583,6 +548,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+  },
+  menuItem: {
+    paddingVertical: 8,
+  },
+  menuTitle: {
+    fontSize: 16,
+    color: THEME_COLORS.text,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Medium' : 'sans-serif',
+  },
+  menuDescription: {
+    fontSize: 14,
+    color: THEME_COLORS.placeholder,
+    fontFamily: Platform.OS === 'ios' ? 'Avenir-Book' : 'sans-serif',
   },
 });
 

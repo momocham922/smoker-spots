@@ -160,39 +160,22 @@ const ListScreen = () => {
   useEffect(() => {
     const fetchSpots = async () => {
       try {
-        console.log('Firestoreからデータを取得中...');
-        const { spots: fetchedSpots, error } = await getSmokerSpots();
-        
-        console.log('取得したデータ:', JSON.stringify(fetchedSpots, null, 2));
-        console.log('エラー:', error);
-        
-        if (error) {
-          console.error('喫煙所データの取得に失敗しました:', error);
-          setLoading(false);
-          return;
-        }
+        const { spots: fetchedSpots } = await getSmokerSpots();
+        console.log('Fetched spots in ListScreen:', fetchedSpots);
         
         if (fetchedSpots && fetchedSpots.length > 0) {
-          console.log(`${fetchedSpots.length}件の喫煙所データを取得しました`);
-          // 型キャストを行い、TypeScriptエラーを回避
-          const typedSpots = fetchedSpots as unknown as SmokerSpot[];
-          setSpots(typedSpots);
-          filterSpotsByDistance(typedSpots, currentLocation, maxDistance);
-        } else {
-          console.log('喫煙所データが見つからないため、サンプルデータを使用します');
-          setSpots(sampleSpots);
-          filterSpotsByDistance(sampleSpots, currentLocation, maxDistance);
+          setSpots(fetchedSpots);
+          filterSpotsByDistance(fetchedSpots, currentLocation, maxDistance);
         }
-        
-        setLoading(false);
       } catch (error) {
         console.error('喫煙所データの取得に失敗しました:', error);
+      } finally {
         setLoading(false);
       }
     };
     
     fetchSpots();
-  }, [currentLocation]);
+  }, []);
 
   // 距離でフィルタリングする関数
   const filterSpotsByDistance = (spotsToFilter: SmokerSpot[], location: {latitude: number, longitude: number} | null, distance: number) => {

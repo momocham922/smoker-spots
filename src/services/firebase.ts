@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { SmokerSpot } from '../types';
 
 // Firebase設定
 const firebaseConfig = {
@@ -64,13 +65,29 @@ export const logout = async () => {
 export const getSmokerSpots = async () => {
   try {
     const spotsRef = collection(db, 'spots');
-    const spotsSnapshot = await getDocs(spotsRef);
-    const spotsList = spotsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const q = query(spotsRef);
+    const spotsSnapshot = await getDocs(q);
+    const spotsList = spotsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        location: data.location,
+        rating: data.rating,
+        facilities: data.facilities,
+        businessHours: data.businessHours,
+        crowdedness: data.crowdedness,
+        photos: data.photos,
+        createdBy: data.createdBy,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      } as SmokerSpot;
+    });
+    console.log('Fetched spots:', spotsList);
     return { spots: spotsList, error: null };
   } catch (error) {
+    console.error('Firestore error:', error);
     return { spots: [], error };
   }
 };

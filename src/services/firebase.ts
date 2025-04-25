@@ -2,7 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, deleteDoc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { SmokerSpot } from '../types';
+import { SmokerSpot, Review } from '../types';
 
 // Firebase設定
 const firebaseConfig = {
@@ -239,6 +239,172 @@ export const getUserProfile = async (userId: string) => {
     }
   } catch (error) {
     return { profile: null, error };
+  }
+};
+
+// レビュー関連の関数
+export const addReview = async (spotId: string, userId: string, rating: number, comment: string) => {
+  try {
+    // レビューを追加
+    const reviewRef = await addDoc(collection(db, 'spots', spotId, 'reviews'), {
+      userId,
+      rating,
+      comment,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    // ユーザーのレビュー数を更新
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      await updateDoc(userRef, {
+        'stats.reviews': (userDoc.data().stats?.reviews || 0) + 1
+      });
+    }
+
+    // 喫煙所の平均評価を更新
+    const reviewsRef = collection(db, 'spots', spotId, 'reviews');
+    const reviewsSnapshot = await getDocs(reviewsRef);
+    const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+    const averageRating = reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
+
+    const spotRef = doc(db, 'spots', spotId);
+    await updateDoc(spotRef, {
+      rating: averageRating,
+      updatedAt: serverTimestamp()
+    });
+
+    return { reviewId: reviewRef.id, error: null };
+  } catch (error) {
+    return { reviewId: null, error };
+  }
+};
+
+// レビューのレスポンス型
+interface ReviewResponse {
+  reviews: Array<Review & {
+    user?: {
+      id: string;
+      displayName: string;
+      photoURL?: string;
+    } | null;
+  }>;
+  error: Error | null;
+}
+
+export const getReviews = async (spotId: string): Promise<ReviewResponse> => {
+  try {
+    const reviewsRef = collection(db, 'spots', spotId, 'reviews');
+    const reviewsSnapshot = await getDocs(reviewsRef);
+    const reviews = await Promise.all(reviewsSnapshot.docs.map(async reviewDoc => {
+      const reviewData = reviewDoc.data();
+      // ユーザー情報を取得
+      const userDocRef = doc(db, 'users', reviewData.userId);
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.exists() ? userDoc.data() : null;
+      
+      return {
+        id: reviewDoc.id,
+        spotId,
+        userId: reviewData.userId,
+        rating: reviewData.rating,
+        comment: reviewData.comment,
+        createdAt: reviewData.createdAt,
+        updatedAt: reviewData.updatedAt,
+        user: userData ? {
+          id: reviewData.userId,
+          displayName: (userData as { displayName?: string }).displayName || 'Anonymous',
+          photoURL: (userData as { photoURL?: string }).photoURL
+        } : null
+      };
+    }));
+
+    return { reviews, error: null };
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return { reviews: [], error: error instanceof Error ? error : new Error('Unknown error occurred') };
+  }
+};
+
+export const updateReview = async (spotId: string, reviewId: string, userId: string, rating: number, comment: string) => {
+  try {
+    const reviewRef = doc(db, 'spots', spotId, 'reviews', reviewId);
+    const reviewDoc = await getDoc(reviewRef);
+
+    if (!reviewDoc.exists()) {
+      throw new Error('Review not found');
+    }
+
+    if (reviewDoc.data().userId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    await updateDoc(reviewRef, {
+      rating,
+      comment,
+      updatedAt: serverTimestamp()
+    });
+
+    // 喫煙所の平均評価を更新
+    const reviewsRef = collection(db, 'spots', spotId, 'reviews');
+    const reviewsSnapshot = await getDocs(reviewsRef);
+    const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+    const averageRating = reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
+
+    const spotRef = doc(db, 'spots', spotId);
+    await updateDoc(spotRef, {
+      rating: averageRating,
+      updatedAt: serverTimestamp()
+    });
+
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error };
+  }
+};
+
+export const deleteReview = async (spotId: string, reviewId: string, userId: string) => {
+  try {
+    const reviewRef = doc(db, 'spots', spotId, 'reviews', reviewId);
+    const reviewDoc = await getDoc(reviewRef);
+
+    if (!reviewDoc.exists()) {
+      throw new Error('Review not found');
+    }
+
+    if (reviewDoc.data().userId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    await deleteDoc(reviewRef);
+
+    // ユーザーのレビュー数を更新
+    const userRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userRef);
+    if (userDoc.exists()) {
+      await updateDoc(userRef, {
+        'stats.reviews': Math.max((userDoc.data().stats?.reviews || 1) - 1, 0)
+      });
+    }
+
+    // 喫煙所の平均評価を更新
+    const reviewsRef = collection(db, 'spots', spotId, 'reviews');
+    const reviewsSnapshot = await getDocs(reviewsRef);
+    const reviews = reviewsSnapshot.docs.map(doc => doc.data());
+    const averageRating = reviews.length > 0
+      ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
+      : 0;
+
+    const spotRef = doc(db, 'spots', spotId);
+    await updateDoc(spotRef, {
+      rating: averageRating,
+      updatedAt: serverTimestamp()
+    });
+
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error };
   }
 };
 

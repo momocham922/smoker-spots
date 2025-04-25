@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Platform, Linking
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Appbar, Surface, Divider, Button, ActivityIndicator } from 'react-native-paper';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import ReviewSection from '../components/ReviewSection';
 import MapView, { Marker } from 'react-native-maps';
 import { getSmokerSpotById, saveFavoriteSpot, removeFavoriteSpot, getFavoriteSpots } from '../services/firebase';
 import { SmokerSpot } from '../types';
@@ -28,6 +29,8 @@ const THEME_COLORS = {
 };
 
 const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation }) => {
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const reviewSectionLayout = React.useRef<number>(0);
   const route = useRoute();
   const [spot, setSpot] = useState<SmokerSpot | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -65,8 +68,11 @@ const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation })
     createdAt: null,
     updatedAt: null
   };
+const fetchSpotDetails = async () => {
+  fetchSpotDetails();
+};
 
-  useEffect(() => {
+useEffect(() => {
     const fetchSpotDetails = async () => {
       try {
         // @ts-ignore
@@ -355,6 +361,22 @@ const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation })
           </View>
         </Surface>
         
+        <View
+          onLayout={(event) => {
+            reviewSectionLayout.current = event.nativeEvent.layout.y;
+          }}
+        >
+          <ReviewSection
+            spotId={spot.id}
+            onReviewAdded={async () => {
+              // 喫煙所の情報を再取得して評価を更新
+              setLoading(true);
+              await fetchSpotDetails();
+              setLoading(false);
+            }}
+          />
+        </View>
+
         <Surface style={styles.actionsContainer}>
           <Button 
             mode="contained" 
@@ -392,6 +414,20 @@ const SpotDetailScreen: React.FC<NativeStackScreenProps<any>> = ({ navigation })
         />
         {!loading && spot && (
           <>
+            <Appbar.Action
+              icon="message-draw"
+              onPress={() => {
+                if (reviewSectionLayout.current > 0) {
+                  scrollViewRef.current?.scrollTo({
+                    y: reviewSectionLayout.current - 80,
+                    animated: true
+                  });
+                }
+              }}
+              color="#FFFFFF"
+              accessibilityLabel="レビューを書く"
+              accessibilityHint="レビューセクションまでスクロールします"
+            />
             <Appbar.Action
               icon={isFavorite ? "heart" : "heart-outline"}
               onPress={handleFavorite}
